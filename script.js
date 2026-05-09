@@ -1,5 +1,5 @@
 // ========== WEATHER API KEY ==========
-const API_KEY = "1bfc409";  // YOUR API KEY HERE
+const API_KEY = "1bfc40947e0e478f8ef184825261102";  // YOUR API KEY HERE
 
 // ========== DOM Elements ==========
 const cityInput = document.getElementById("cityInput");
