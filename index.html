@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="Breeze Hub Pro - Real-time weather app with 5-day forecast, AQI, and current location">
-  <title>Breeze Hub Pro | Weather App</title>
+  <meta name="description" content="Breeze Hub Pro - Real-time weather app by Ahmad Gohar">
+  <title>Breeze Hub Pro | Weather App by Ahmad Gohar</title>
   
   <link rel="stylesheet" href="style.css">
   
@@ -17,68 +17,79 @@
 </head>
 <body>
 
-  <div class="container">
-    <div class="weather-card">
+  <div class="app-wrapper">
+    <div class="container">
+      <div class="weather-card">
 
-      <!-- Header -->
-      <div class="header">
-        <h1>
-          <i class="fas fa-cloud-sun"></i> 
-          Breeze Hub Pro
-        </h1>
-        <button id="locationBtn" class="location-btn">
-          <i class="fas fa-location-dot"></i> 
-          <span>Current Location</span>
-        </button>
-      </div>
-
-      <!-- Search Box -->
-      <div class="search-box">
-        <div class="search-input-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" id="cityInput" placeholder="Search city... e.g., Karachi, London, Dubai">
+        <!-- Header -->
+        <div class="header">
+          <h1>
+            <i class="fas fa-cloud-sun"></i> 
+            Breeze Hub Pro
+          </h1>
+          <button id="locationBtn" class="location-btn">
+            <i class="fas fa-location-dot"></i> 
+            <span>Current Location</span>
+          </button>
         </div>
-        <button id="searchBtn">
-          <i class="fas fa-search"></i>
-          <span>Search</span>
-        </button>
-      </div>
 
-      <!-- Search History -->
-      <div class="history-section" id="historySection">
-        <div class="history-header">
-          <i class="fas fa-history"></i>
-          <span>Recent:</span>
+        <!-- Search Box -->
+        <div class="search-box">
+          <div class="search-input-wrapper">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="cityInput" placeholder="Search city... e.g., Karachi, London, Dubai">
+          </div>
+          <button id="searchBtn">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+          </button>
         </div>
-        <div id="historyList" class="history-list"></div>
-      </div>
 
-      <!-- Weather Content -->
-      <div id="weatherContent">
-        <div class="placeholder">
-          <i class="fas fa-cloud-moon" style="font-size: 60px; opacity: 0.5;"></i>
-          <h3>Welcome to Breeze Hub Pro</h3>
-          <p>Search any city to get accurate weather data 🌍</p>
-          <div class="example-cities">
-            <span onclick="getWeather('Karachi')">Karachi</span>
-            <span onclick="getWeather('London')">London</span>
-            <span onclick="getWeather('Dubai')">Dubai</span>
-            <span onclick="getWeather('New York')">New York</span>
+        <!-- Search History -->
+        <div class="history-section" id="historySection">
+          <div class="history-header">
+            <i class="fas fa-history"></i>
+            <span>Recent:</span>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </div>
+
+        <!-- Weather Content -->
+        <div id="weatherContent">
+          <div class="placeholder">
+            <i class="fas fa-cloud-moon" style="font-size: 60px; opacity: 0.5;"></i>
+            <h3>Welcome to Breeze Hub Pro</h3>
+            <p>Search any city to get accurate weather data 🌍</p>
+            <div class="example-cities">
+              <span onclick="getWeather('Karachi')">Karachi</span>
+              <span onclick="getWeather('London')">London</span>
+              <span onclick="getWeather('Dubai')">Dubai</span>
+              <span onclick="getWeather('New York')">New York</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Offline Indicator -->
-      <div id="offlineIndicator" class="offline-indicator" style="display: none;">
-        <i class="fas fa-wifi-slash"></i> You're offline. Please check your connection.
-      </div>
+        <!-- Offline Indicator -->
+        <div id="offlineIndicator" class="offline-indicator" style="display: none;">
+          <i class="fas fa-wifi-slash"></i> You're offline. Please check your connection.
+        </div>
 
+      </div>
     </div>
-  </div>
 
-  <!-- ========== FOOTER WITH NAME ========== -->
-  <div class="footer">
-    <p>Made with <i class="fas fa-heart" style="color: #ff6b6b;"></i> by Ahmad Gohar</p>
+    <!-- ========== FOOTER WITH NAME ========== -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <p>
+          Made with 
+          <i class="fas fa-heart heart-icon"></i> 
+          by <span class="developer-name">Ahmad Gohar</span>
+        </p>
+        <p class="footer-small">
+          <i class="fas fa-code"></i> Breeze Hub Pro | Weather App
+        </p>
+      </div>
+    </footer>
   </div>
 
   <script src="script.js"></script>
