@@ -1,6 +1,10 @@
 // ========== WEATHER API KEY ==========
 const API_KEY = "1bfc40947e0e478f8ef184825261102";  // YOUR API KEY HERE
 
+// ========== CORS PROXY (This fixes the error) ==========
+// Using a free CORS proxy to bypass the restriction
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+
 // ========== DOM Elements ==========
 const cityInput = document.getElementById("cityInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -61,8 +65,9 @@ function getDayName(dateStr) {
 function displayForecast(forecastDays) {
     if (!forecastDays || forecastDays.length === 0) return '';
     
-    // Skip today (index 0) and show next 5 days
     const nextDays = forecastDays.slice(1, 6);
+    
+    if (nextDays.length === 0) return '';
     
     return `
         <div class="forecast-section">
@@ -81,7 +86,7 @@ function displayForecast(forecastDays) {
     `;
 }
 
-// ========== Main Weather Function ==========
+// ========== Main Weather Function with CORS FIX ==========
 async function getWeather(city) {
     if (!city || city.trim() === "") {
         showError("Please enter a city name");
@@ -98,10 +103,16 @@ async function getWeather(city) {
     `;
     
     try {
-        // Get current weather + 5-day forecast
-        const response = await fetch(
-            `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`
-        );
+        // FIXED: Using CORS proxy to bypass the error
+        const url = `${CORS_PROXY}https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`;
+        
+        console.log("Fetching weather data...");
+        
+        const response = await fetch(url, {
+            headers: {
+                'Origin': 'https://breeze-hub-pro.netlify.app'
+            }
+        });
         
         const data = await response.json();
         
@@ -115,7 +126,6 @@ async function getWeather(city) {
         
         const aqiValue = data.current.air_quality?.pm2_5 || 0;
         
-        // Get AQI status
         let aqiStatus = "Good";
         let aqiColor = "#4ade80";
         if (aqiValue > 50) { aqiStatus = "Moderate"; aqiColor = "#fbbf24"; }
@@ -183,13 +193,13 @@ async function getWeather(city) {
                     </div>
                 </div>
                 
-                ${displayForecast(data.forecast.forecastday)}
+                ${data.forecast ? displayForecast(data.forecast.forecastday) : ''}
             </div>
         `;
         
     } catch (error) {
         console.error("Error:", error);
-        showError("Network error. Please check your connection.");
+        showError("Unable to fetch weather. Please try again.");
     }
 }
 
@@ -199,6 +209,7 @@ function showError(message) {
             <i class="fas fa-exclamation-triangle" style="font-size: 40px;"></i>
             <p><strong>⚠️ ${message}</strong></p>
             <p style="font-size: 13px; margin-top: 12px;">💡 Try: Karachi, London, Dubai, New York, Tokyo</p>
+            <p style="font-size: 11px; margin-top: 8px;">🔄 If error persists, refresh the page</p>
         </div>
     `;
 }
@@ -221,9 +232,8 @@ function getCurrentLocationWeather() {
         async (position) => {
             const { latitude, longitude } = position.coords;
             try {
-                const response = await fetch(
-                    `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`
-                );
+                const url = `${CORS_PROXY}https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`;
+                const response = await fetch(url);
                 const data = await response.json();
                 if (data.error) {
                     showError("Could not get weather for your location");
