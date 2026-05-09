@@ -1,6 +1,5 @@
 // ========== WEATHER API KEY ==========
-// Get your FREE key from: https://www.weatherapi.com/
-const API_KEY = "1bfc40947e0e478f8ef184825261102";  // YOUR API KEY HERE
+const API_KEY = "1bfc409";  // YOUR API KEY HERE
 
 // ========== DOM Elements ==========
 const cityInput = document.getElementById("cityInput");
@@ -10,29 +9,7 @@ const weatherContent = document.getElementById("weatherContent");
 const historyList = document.getElementById("historyList");
 const offlineIndicator = document.getElementById("offlineIndicator");
 
-// ========== Check Internet Connection ==========
-function checkOnlineStatus() {
-    if (!navigator.onLine) {
-        if (offlineIndicator) offlineIndicator.style.display = "flex";
-        showError("You are offline. Please check your internet connection.");
-        return false;
-    } else {
-        if (offlineIndicator) offlineIndicator.style.display = "none";
-        return true;
-    }
-}
-
-window.addEventListener('online', () => {
-    if (offlineIndicator) offlineIndicator.style.display = "none";
-    showError("Back online! Search again.");
-});
-
-window.addEventListener('offline', () => {
-    if (offlineIndicator) offlineIndicator.style.display = "flex";
-    showError("You are offline. Please check your connection.");
-});
-
-// ========== Search History (Local Storage) ==========
+// ========== Search History ==========
 let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
 
 function saveHistory() {
@@ -74,10 +51,38 @@ function setBackground(condition) {
     }
 }
 
+// ========== Get Day Name ==========
+function getDayName(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en', { weekday: 'short' });
+}
+
+// ========== Display 5-Day Forecast ==========
+function displayForecast(forecastDays) {
+    if (!forecastDays || forecastDays.length === 0) return '';
+    
+    // Skip today (index 0) and show next 5 days
+    const nextDays = forecastDays.slice(1, 6);
+    
+    return `
+        <div class="forecast-section">
+            <h3><i class="fas fa-calendar-week"></i> 5-Day Forecast</h3>
+            <div class="forecast-container">
+                ${nextDays.map(day => `
+                    <div class="forecast-day">
+                        <div class="forecast-day-name">${getDayName(day.date)}</div>
+                        <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}">
+                        <div class="forecast-temp">${Math.round(day.day.avgtemp_c)}°C</div>
+                        <div class="forecast-condition">${day.day.condition.text.split(' ')[0]}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
 // ========== Main Weather Function ==========
 async function getWeather(city) {
-    if (!checkOnlineStatus()) return;
-    
     if (!city || city.trim() === "") {
         showError("Please enter a city name");
         return;
@@ -93,8 +98,9 @@ async function getWeather(city) {
     `;
     
     try {
+        // Get current weather + 5-day forecast
         const response = await fetch(
-            `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`
+            `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`
         );
         
         const data = await response.json();
@@ -109,6 +115,13 @@ async function getWeather(city) {
         
         const aqiValue = data.current.air_quality?.pm2_5 || 0;
         
+        // Get AQI status
+        let aqiStatus = "Good";
+        let aqiColor = "#4ade80";
+        if (aqiValue > 50) { aqiStatus = "Moderate"; aqiColor = "#fbbf24"; }
+        if (aqiValue > 100) { aqiStatus = "Unhealthy"; aqiColor = "#fb923c"; }
+        if (aqiValue > 150) { aqiStatus = "Hazardous"; aqiColor = "#f87171"; }
+        
         weatherContent.innerHTML = `
             <div class="weather-info">
                 <img src="https:${data.current.condition.icon}" alt="weather icon">
@@ -122,46 +135,61 @@ async function getWeather(city) {
                 <div class="details">
                     <div class="detail-card">
                         <i class="fas fa-tint"></i>
-                        <div style="flex: 1; text-align: left; padding-left: 12px;">
-                            <h4>Humidity</h4>
-                            <p>${data.current.humidity}%</p>
-                        </div>
+                        <h4>Humidity</h4>
+                        <p>${data.current.humidity}%</p>
                     </div>
                     
                     <div class="detail-card">
                         <i class="fas fa-wind"></i>
-                        <div style="flex: 1; text-align: left; padding-left: 12px;">
-                            <h4>Wind Speed</h4>
-                            <p>${data.current.wind_kph} km/h</p>
-                        </div>
+                        <h4>Wind Speed</h4>
+                        <p>${data.current.wind_kph} km/h</p>
                     </div>
                     
                     <div class="detail-card">
                         <i class="fas fa-thermometer-half"></i>
-                        <div style="flex: 1; text-align: left; padding-left: 12px;">
-                            <h4>Feels Like</h4>
-                            <p>${Math.round(data.current.feelslike_c)}°C</p>
-                        </div>
+                        <h4>Feels Like</h4>
+                        <p>${Math.round(data.current.feelslike_c)}°C</p>
                     </div>
                     
                     <div class="detail-card">
                         <i class="fas fa-smog"></i>
-                        <div style="flex: 1; text-align: left; padding-left: 12px;">
-                            <h4>Air Quality</h4>
-                            <p>${aqiValue.toFixed(0)} PM2.5</p>
-                        </div>
+                        <h4>Air Quality</h4>
+                        <p style="color: ${aqiColor};">${aqiValue.toFixed(0)} - ${aqiStatus}</p>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <i class="fas fa-eye"></i>
+                        <h4>Visibility</h4>
+                        <p>${data.current.vis_km} km</p>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <h4>Pressure</h4>
+                        <p>${data.current.pressure_mb} mb</p>
                     </div>
                 </div>
+                
+                <div class="sun-info">
+                    <div class="sun-card">
+                        <i class="fas fa-sunrise"></i>
+                        <h4>Sunrise</h4>
+                        <p>${data.forecast.forecastday[0].astro.sunrise}</p>
+                    </div>
+                    <div class="sun-card">
+                        <i class="fas fa-sunset"></i>
+                        <h4>Sunset</h4>
+                        <p>${data.forecast.forecastday[0].astro.sunset}</p>
+                    </div>
+                </div>
+                
+                ${displayForecast(data.forecast.forecastday)}
             </div>
         `;
         
     } catch (error) {
-        console.error("Weather fetch error:", error);
-        if (!navigator.onLine) {
-            showError("No internet connection. Please check your network.");
-        } else {
-            showError("Unable to fetch weather. Please try again.");
-        }
+        console.error("Error:", error);
+        showError("Network error. Please check your connection.");
     }
 }
 
@@ -170,18 +198,15 @@ function showError(message) {
         <div class="error">
             <i class="fas fa-exclamation-triangle" style="font-size: 40px;"></i>
             <p><strong>⚠️ ${message}</strong></p>
-            <p style="font-size: 13px; margin-top: 12px;">💡 Try these cities: Karachi, London, Dubai, New York, Tokyo</p>
-            <p style="font-size: 12px; margin-top: 8px;">🔍 Make sure the city name is spelled correctly</p>
+            <p style="font-size: 13px; margin-top: 12px;">💡 Try: Karachi, London, Dubai, New York, Tokyo</p>
         </div>
     `;
 }
 
-// ========== Get Current Location Weather ==========
+// ========== Current Location ==========
 function getCurrentLocationWeather() {
-    if (!checkOnlineStatus()) return;
-    
     if (!navigator.geolocation) {
-        showError("Geolocation is not supported by your browser");
+        showError("Geolocation is not supported");
         return;
     }
     
@@ -197,7 +222,7 @@ function getCurrentLocationWeather() {
             const { latitude, longitude } = position.coords;
             try {
                 const response = await fetch(
-                    `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${latitude},${longitude}&aqi=yes`
+                    `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`
                 );
                 const data = await response.json();
                 if (data.error) {
@@ -207,74 +232,24 @@ function getCurrentLocationWeather() {
                     getWeather(data.location.name);
                 }
             } catch (error) {
-                showError("Failed to fetch weather for your location");
+                showError("Failed to fetch weather");
             }
         },
-        (error) => {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    showError("Please allow location access to use this feature");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    showError("Location information is unavailable");
-                    break;
-                case error.TIMEOUT:
-                    showError("Location request timed out");
-                    break;
-                default:
-                    showError("Could not get your location");
-            }
-        },
-        { timeout: 10000, enableHighAccuracy: true }
+        () => {
+            showError("Please allow location access");
+        }
     );
 }
 
 // ========== Event Listeners ==========
-if (searchBtn) {
-    searchBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        getWeather(cityInput.value);
-    });
-    searchBtn.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        getWeather(cityInput.value);
-    });
-}
-
-if (locationBtn) {
-    locationBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        getCurrentLocationWeather();
-    });
-    locationBtn.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        getCurrentLocationWeather();
-    });
-}
-
+if (searchBtn) searchBtn.addEventListener("click", () => getWeather(cityInput.value));
+if (locationBtn) locationBtn.addEventListener("click", getCurrentLocationWeather);
 if (cityInput) {
     cityInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            getWeather(cityInput.value);
-        }
+        if (e.key === "Enter") getWeather(cityInput.value);
     });
 }
 
-// ========== Load History and Default City ==========
+// ========== Load Default ==========
 displayHistory();
-
-if (searchHistory.length > 0) {
-    getWeather(searchHistory[0]);
-} else {
-    getWeather("Karachi");
-}
-
-// Fix viewport height for mobile
-function setVH() {
-    let vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-
-window.addEventListener('resize', setVH);
-setVH();
+getWeather("Karachi");
