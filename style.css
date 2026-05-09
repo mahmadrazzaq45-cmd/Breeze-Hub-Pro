@@ -344,3 +344,46 @@ body.default-bg {
     text-align: center;
   }
 }
+/* ========== FOOTER ========== */
+.footer {
+    text-align: center;
+    margin-top: 20px;
+    padding: 15px 20px;
+}
+
+.footer p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.footer i {
+    margin: 0 4px;
+    animation: heartbeat 1.5s ease infinite;
+}
+
+/* Heartbeat Animation */
+@keyframes heartbeat {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Mobile responsive footer */
+@media (max-width: 600px) {
+    .footer {
+        margin-top: 15px;
+        padding: 10px 15px;
+    }
+    
+    .footer p {
+        font-size: 0.75rem;
+    }
+}
