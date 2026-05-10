@@ -1,9 +1,5 @@
 // ========== WEATHER API KEY ==========
-const API_KEY = "1bfc40947e0e478f8ef184825261102";  // YOUR API KEY HERE
-
-// ========== CORS PROXY (This fixes the error) ==========
-// Using a free CORS proxy to bypass the restriction
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+const API_KEY = "1bfc40947e0e478f8ef184825261102";
 
 // ========== DOM Elements ==========
 const cityInput = document.getElementById("cityInput");
@@ -11,7 +7,6 @@ const searchBtn = document.getElementById("searchBtn");
 const locationBtn = document.getElementById("locationBtn");
 const weatherContent = document.getElementById("weatherContent");
 const historyList = document.getElementById("historyList");
-const offlineIndicator = document.getElementById("offlineIndicator");
 
 // ========== Search History ==========
 let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
@@ -61,6 +56,23 @@ function getDayName(dateStr) {
     return date.toLocaleDateString('en', { weekday: 'short' });
 }
 
+// ========== Get Forecast ==========
+async function getForecast(city) {
+    try {
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`;
+        
+        const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
+        const data = await response.json();
+        
+        if (data.error) return null;
+        return data.forecast?.forecastday || null;
+    } catch (error) {
+        console.log("Forecast error:", error);
+        return null;
+    }
+}
+
 // ========== Display 5-Day Forecast ==========
 function displayForecast(forecastDays) {
     if (!forecastDays || forecastDays.length === 0) return '';
@@ -86,7 +98,7 @@ function displayForecast(forecastDays) {
     `;
 }
 
-// ========== Main Weather Function with CORS FIX ==========
+// ========== Main Weather Function ==========
 async function getWeather(city) {
     if (!city || city.trim() === "") {
         showError("Please enter a city name");
@@ -103,17 +115,10 @@ async function getWeather(city) {
     `;
     
     try {
-        // FIXED: Using CORS proxy to bypass the error
-        const url = `${CORS_PROXY}https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`;
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const currentApiUrl = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
         
-        console.log("Fetching weather data...");
-        
-        const response = await fetch(url, {
-            headers: {
-                'Origin': 'https://breeze-hub-pro.netlify.app'
-            }
-        });
-        
+        const response = await fetch(proxyUrl + encodeURIComponent(currentApiUrl));
         const data = await response.json();
         
         if (data.error) {
@@ -131,6 +136,18 @@ async function getWeather(city) {
         if (aqiValue > 50) { aqiStatus = "Moderate"; aqiColor = "#fbbf24"; }
         if (aqiValue > 100) { aqiStatus = "Unhealthy"; aqiColor = "#fb923c"; }
         if (aqiValue > 150) { aqiStatus = "Hazardous"; aqiColor = "#f87171"; }
+        
+        const forecastDays = await getForecast(city);
+        
+        let sunrise = "N/A";
+        let sunset = "N/A";
+        let forecastHTML = "";
+        
+        if (forecastDays && forecastDays.length > 0) {
+            sunrise = forecastDays[0].astro?.sunrise || "N/A";
+            sunset = forecastDays[0].astro?.sunset || "N/A";
+            forecastHTML = displayForecast(forecastDays);
+        }
         
         weatherContent.innerHTML = `
             <div class="weather-info">
@@ -184,22 +201,22 @@ async function getWeather(city) {
                     <div class="sun-card">
                         <i class="fas fa-sunrise"></i>
                         <h4>Sunrise</h4>
-                        <p>${data.forecast.forecastday[0].astro.sunrise}</p>
+                        <p>${sunrise}</p>
                     </div>
                     <div class="sun-card">
                         <i class="fas fa-sunset"></i>
                         <h4>Sunset</h4>
-                        <p>${data.forecast.forecastday[0].astro.sunset}</p>
+                        <p>${sunset}</p>
                     </div>
                 </div>
                 
-                ${data.forecast ? displayForecast(data.forecast.forecastday) : ''}
+                ${forecastHTML}
             </div>
         `;
         
     } catch (error) {
         console.error("Error:", error);
-        showError("Unable to fetch weather. Please try again.");
+        showError("Unable to fetch weather. Please check your internet connection.");
     }
 }
 
@@ -209,7 +226,7 @@ function showError(message) {
             <i class="fas fa-exclamation-triangle" style="font-size: 40px;"></i>
             <p><strong>⚠️ ${message}</strong></p>
             <p style="font-size: 13px; margin-top: 12px;">💡 Try: Karachi, London, Dubai, New York, Tokyo</p>
-            <p style="font-size: 11px; margin-top: 8px;">🔄 If error persists, refresh the page</p>
+            <p style="font-size: 11px; margin-top: 8px;">🔄 Refresh the page and try again</p>
         </div>
     `;
 }
@@ -231,9 +248,11 @@ function getCurrentLocationWeather() {
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             const { latitude, longitude } = position.coords;
+            const proxyUrl = 'https://api.allorigins.win/raw?url=';
+            const apiUrl = `https://api.weatherapai.com/v1/current.json?key=${API_KEY}&q=${latitude},${longitude}&aqi=yes`;
+            
             try {
-                const url = `${CORS_PROXY}https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`;
-                const response = await fetch(url);
+                const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
                 const data = await response.json();
                 if (data.error) {
                     showError("Could not get weather for your location");
@@ -242,7 +261,7 @@ function getCurrentLocationWeather() {
                     getWeather(data.location.name);
                 }
             } catch (error) {
-                showError("Failed to fetch weather");
+                showError("Failed to fetch weather for your location");
             }
         },
         () => {
