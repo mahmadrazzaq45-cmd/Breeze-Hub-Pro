@@ -3,97 +3,517 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="Breeze Hub Pro - Advanced Weather App with 5-day forecast, AQI, and current location by Ahmad Gohar">
-  <title>Breeze Hub Pro | Advanced Weather App by Ahmad Gohar</title>
+  <title>Breeze Hub Pro | Weather App by Ahmad Gohar</title>
   
-  <link rel="stylesheet" href="style.css">
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      transition: background 0.5s ease;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+    }
+
+    body.sunny { background: linear-gradient(135deg, #f5af19, #f12711); }
+    body.cloudy { background: linear-gradient(135deg, #757F9A, #D7DDE8); }
+    body.rainy { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+    body.snowy { background: linear-gradient(135deg, #e0eafc, #cfdef3); }
+
+    .app-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 550px;
+      margin: 0 auto;
+    }
+
+    .weather-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 32px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      color: white;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .location-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 18px;
+      border-radius: 40px;
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .location-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .search-box {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px 14px 42px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      border-radius: 40px;
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    .search-box input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+    .search-box button {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 40px;
+      background: #38bdf8;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box button:hover { background: #0ea5e9; }
+
+    .history-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.8rem;
+    }
+
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 6px 14px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: white;
+      transition: all 0.2s;
+    }
+
+    .history-item:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .example-cities {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .example-cities span {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 8px 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .example-cities span:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .weather-info { text-align: center; animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .weather-info img { width: 100px; margin: 10px 0; }
+    .temp { font-size: 4rem; font-weight: 800; color: white; }
+    .city { font-size: 1.6rem; font-weight: 600; color: white; }
+    .condition { font-size: 1rem; opacity: 0.9; margin-bottom: 20px; text-transform: capitalize; }
+
+    .details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .detail-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      border-radius: 24px;
+      text-align: center;
+    }
+
+    .detail-card i { font-size: 1.5rem; margin-bottom: 8px; color: #38bdf8; }
+    .detail-card h4 { font-size: 0.7rem; opacity: 0.8; margin-bottom: 6px; text-transform: uppercase; }
+    .detail-card p { font-size: 1rem; font-weight: 700; color: white; }
+
+    .sun-info { display: flex; gap: 12px; margin: 15px 0; }
+    .sun-card { flex: 1; background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 20px; text-align: center; }
+    .sun-card i { font-size: 1.2rem; color: #fbbf24; }
+    .sun-card h4 { font-size: 0.7rem; opacity: 0.8; }
+    .sun-card p { font-size: 0.85rem; font-weight: 600; margin-top: 5px; }
+
+    .forecast-section {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .forecast-section h3 { font-size: 0.9rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .forecast-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+    .forecast-day { background: rgba(255, 255, 255, 0.1); min-width: 85px; padding: 12px 8px; border-radius: 20px; text-align: center; }
+    .forecast-day img { width: 45px; margin: 5px 0; }
+    .forecast-day-name { font-size: 0.75rem; font-weight: 600; }
+    .forecast-temp { font-size: 0.9rem; font-weight: 700; }
+
+    .placeholder { text-align: center; padding: 40px 20px; color: white; }
+    .placeholder h3 { margin: 15px 0 8px; }
+
+    .loading { text-align: center; padding: 40px; color: white; }
+    .spinner {
+      width: 45px;
+      height: 45px;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 15px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error { text-align: center; padding: 40px 20px; color: #ffcccc; }
+
+    .main-footer {
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 30px;
+      text-align: center;
+    }
+
+    .footer-content p { color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; }
+    .heart-icon { color: #ff6b6b; margin: 0 4px; animation: heartbeat 1.5s ease infinite; display: inline-block; }
+    @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+    .developer-name { color: #38bdf8; font-weight: 700; background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 20px; }
+    .footer-small { font-size: 0.65rem !important; margin-top: 6px; opacity: 0.7; }
+
+    @media (max-width: 600px) {
+      .weather-card { padding: 18px; }
+      .header { flex-direction: column; text-align: center; }
+      .location-btn { width: 100%; justify-content: center; }
+      .search-box { flex-direction: column; }
+      .temp { font-size: 3rem; }
+      .city { font-size: 1.2rem; }
+      .details { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="app-wrapper">
-    <div class="container">
-      <div class="weather-card">
+<div class="app-wrapper">
+  <div class="container">
+    <div class="weather-card">
 
-        <!-- Header -->
-        <div class="header">
-          <h1>
-            <i class="fas fa-cloud-sun"></i> 
-            Breeze Hub Pro
-          </h1>
-          <button id="locationBtn" class="location-btn">
-            <i class="fas fa-location-dot"></i> 
-            <span>Current Location</span>
-          </button>
-        </div>
-
-        <!-- Search Box -->
-        <div class="search-box">
-          <div class="search-input-wrapper">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="cityInput" placeholder="Search city... e.g., Karachi, London, Dubai">
-          </div>
-          <button id="searchBtn">
-            <i class="fas fa-search"></i>
-            <span>Search</span>
-          </button>
-        </div>
-
-        <!-- Search History -->
-        <div class="history-section" id="historySection">
-          <div class="history-header">
-            <i class="fas fa-history"></i>
-            <span>Recent:</span>
-          </div>
-          <div id="historyList" class="history-list"></div>
-        </div>
-
-        <!-- Weather Content -->
-        <div id="weatherContent">
-          <div class="placeholder">
-            <i class="fas fa-cloud-moon" style="font-size: 60px; opacity: 0.5;"></i>
-            <h3>Welcome to Breeze Hub Pro</h3>
-            <p>Search any city to get accurate weather data 🌍</p>
-            <p style="font-size: 0.8rem; margin-top: 10px;">✨ Features: 5-Day Forecast • AQI • Sunrise/Sunset • Current Location</p>
-            <div class="example-cities">
-              <span onclick="getWeather('Karachi')">Karachi</span>
-              <span onclick="getWeather('London')">London</span>
-              <span onclick="getWeather('Dubai')">Dubai</span>
-              <span onclick="getWeather('New York')">New York</span>
-              <span onclick="getWeather('Tokyo')">Tokyo</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Offline Indicator -->
-        <div id="offlineIndicator" class="offline-indicator" style="display: none;">
-          <i class="fas fa-wifi-slash"></i> You're offline. Please check your connection.
-        </div>
-
+      <div class="header">
+        <h1><i class="fas fa-cloud-sun"></i> Breeze Hub Pro</h1>
+        <button id="locationBtn" class="location-btn"><i class="fas fa-location-dot"></i> <span>Current Location</span></button>
       </div>
+
+      <div class="search-box">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="cityInput" placeholder="Search city... Karachi, London, Dubai">
+        </div>
+        <button id="searchBtn"><i class="fas fa-search"></i> <span>Search</span></button>
+      </div>
+
+      <div class="history-section">
+        <div class="history-header"><i class="fas fa-history"></i> <span>Recent:</span></div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+
+      <div id="weatherContent">
+        <div class="placeholder">
+          <i class="fas fa-cloud-moon" style="font-size: 60px; opacity: 0.5;"></i>
+          <h3>Welcome to Breeze Hub Pro</h3>
+          <p>Search any city to get accurate weather data 🌍</p>
+          <div class="example-cities">
+            <span onclick="getWeather('Karachi')">Karachi</span>
+            <span onclick="getWeather('London')">London</span>
+            <span onclick="getWeather('Dubai')">Dubai</span>
+            <span onclick="getWeather('New York')">New York</span>
+          </div>
+        </div>
+      </div>
+
     </div>
-
-    <!-- ========== FOOTER WITH NAME ========== -->
-    <footer class="main-footer">
-      <div class="footer-content">
-        <p>
-          Made with 
-          <i class="fas fa-heart heart-icon"></i> 
-          by <span class="developer-name">Ahmad Gohar</span>
-        </p>
-        <p class="footer-small">
-          <i class="fas fa-code"></i> Breeze Hub Pro | 5-Day Forecast • AQI • Live Weather
-        </p>
-      </div>
-    </footer>
   </div>
 
-  <script src="script.js"></script>
+  <footer class="main-footer">
+    <div class="footer-content">
+      <p>Made with <i class="fas fa-heart heart-icon"></i> by <span class="developer-name">Ahmad Gohar</span></p>
+      <p class="footer-small"><i class="fas fa-code"></i> Breeze Hub Pro | Weather App</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+// Font Awesome
+const link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+document.head.appendChild(link);
+
+// ========== WEATHER API KEY ==========
+const API_KEY = "1bfc40947e0e478f8ef184825261102";
+
+// ========== DOM Elements ==========
+const cityInput = document.getElementById("cityInput");
+const searchBtn = document.getElementById("searchBtn");
+const locationBtn = document.getElementById("locationBtn");
+const weatherContent = document.getElementById("weatherContent");
+const historyList = document.getElementById("historyList");
+
+// ========== Search History ==========
+let searchHistory = JSON.parse(localStorage.getItem("weatherHistory")) || [];
+
+function saveHistory() {
+    localStorage.setItem("weatherHistory", JSON.stringify(searchHistory));
+}
+
+function addToHistory(cityName) {
+    if (!searchHistory.includes(cityName) && cityName) {
+        searchHistory.unshift(cityName);
+        if (searchHistory.length > 5) searchHistory.pop();
+        saveHistory();
+        displayHistory();
+    }
+}
+
+function displayHistory() {
+    if (historyList && searchHistory.length > 0) {
+        historyList.innerHTML = searchHistory.map(city => 
+            `<span class="history-item" onclick="getWeather('${city.replace(/'/g, "\\'")}')">${city}</span>`
+        ).join('');
+    }
+}
+
+function setBackground(condition) {
+    const body = document.body;
+    const lowerCondition = condition.toLowerCase();
+    if (lowerCondition.includes('sunny') || lowerCondition.includes('clear')) body.className = 'sunny';
+    else if (lowerCondition.includes('cloud')) body.className = 'cloudy';
+    else if (lowerCondition.includes('rain')) body.className = 'rainy';
+    else if (lowerCondition.includes('snow')) body.className = 'snowy';
+    else body.className = '';
+}
+
+function getDayName(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en', { weekday: 'short' });
+}
+
+// ========== MAIN WEATHER FUNCTION - DIRECT CALL (No Proxy needed if using HTTPS) ==========
+async function getWeather(city) {
+    if (!city || city.trim() === "") {
+        showError("Please enter a city name");
+        return;
+    }
+    
+    city = city.trim();
+    
+    weatherContent.innerHTML = `<div class="loading"><div class="spinner"></div><p>Fetching weather for ${city}...</p></div>`;
+    
+    try {
+        // DIRECT API CALL - WeatherAPI supports CORS!
+        const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showError(data.error.message);
+            return;
+        }
+        
+        addToHistory(data.location.name);
+        setBackground(data.current.condition.text);
+        
+        const aqiValue = data.current.air_quality?.pm2_5 || 0;
+        let aqiStatus = "Good";
+        let aqiColor = "#4ade80";
+        if (aqiValue > 50) { aqiStatus = "Moderate"; aqiColor = "#fbbf24"; }
+        if (aqiValue > 100) { aqiStatus = "Unhealthy"; aqiColor = "#fb923c"; }
+        if (aqiValue > 150) { aqiStatus = "Hazardous"; aqiColor = "#f87171"; }
+        
+        let sunrise = "N/A", sunset = "N/A";
+        let forecastHTML = "";
+        
+        if (data.forecast && data.forecast.forecastday && data.forecast.forecastday.length > 0) {
+            sunrise = data.forecast.forecastday[0].astro?.sunrise || "N/A";
+            sunset = data.forecast.forecastday[0].astro?.sunset || "N/A";
+            const nextDays = data.forecast.forecastday.slice(1, 6);
+            if (nextDays.length > 0) {
+                forecastHTML = `
+                    <div class="forecast-section">
+                        <h3><i class="fas fa-calendar-week"></i> 5-Day Forecast</h3>
+                        <div class="forecast-container">
+                            ${nextDays.map(day => `
+                                <div class="forecast-day">
+                                    <div class="forecast-day-name">${getDayName(day.date)}</div>
+                                    <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}">
+                                    <div class="forecast-temp">${Math.round(day.day.avgtemp_c)}°C</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        weatherContent.innerHTML = `
+            <div class="weather-info">
+                <img src="https:${data.current.condition.icon}" alt="weather icon">
+                <div class="temp">${Math.round(data.current.temp_c)}°C</div>
+                <div class="city"><i class="fas fa-map-marker-alt"></i> ${data.location.name}, ${data.location.country}</div>
+                <div class="condition">${data.current.condition.text}</div>
+                
+                <div class="details">
+                    <div class="detail-card"><i class="fas fa-tint"></i><h4>Humidity</h4><p>${data.current.humidity}%</p></div>
+                    <div class="detail-card"><i class="fas fa-wind"></i><h4>Wind Speed</h4><p>${data.current.wind_kph} km/h</p></div>
+                    <div class="detail-card"><i class="fas fa-thermometer-half"></i><h4>Feels Like</h4><p>${Math.round(data.current.feelslike_c)}°C</p></div>
+                    <div class="detail-card"><i class="fas fa-smog"></i><h4>Air Quality</h4><p style="color: ${aqiColor};">${aqiValue.toFixed(0)} - ${aqiStatus}</p></div>
+                    <div class="detail-card"><i class="fas fa-eye"></i><h4>Visibility</h4><p>${data.current.vis_km} km</p></div>
+                    <div class="detail-card"><i class="fas fa-tachometer-alt"></i><h4>Pressure</h4><p>${data.current.pressure_mb} mb</p></div>
+                </div>
+                
+                <div class="sun-info">
+                    <div class="sun-card"><i class="fas fa-sunrise"></i><h4>Sunrise</h4><p>${sunrise}</p></div>
+                    <div class="sun-card"><i class="fas fa-sunset"></i><h4>Sunset</h4><p>${sunset}</p></div>
+                </div>
+                
+                ${forecastHTML}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error("Error:", error);
+        showError("Unable to fetch weather. Please check your internet connection.");
+    }
+}
+
+function showError(message) {
+    weatherContent.innerHTML = `
+        <div class="error">
+            <i class="fas fa-exclamation-triangle" style="font-size: 40px;"></i>
+            <p><strong>⚠️ ${message}</strong></p>
+            <p style="font-size: 13px; margin-top: 12px;">💡 Try: Karachi, London, Dubai, New York</p>
+        </div>
+    `;
+}
+
+function getCurrentLocationWeather() {
+    if (!navigator.geolocation) {
+        showError("Geolocation is not supported");
+        return;
+    }
+    
+    weatherContent.innerHTML = `<div class="loading"><div class="spinner"></div><p>Getting your location...</p></div>`;
+    
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+                const response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`);
+                const data = await response.json();
+                if (data.error) {
+                    showError("Could not get weather for your location");
+                } else {
+                    addToHistory(data.location.name);
+                    getWeather(data.location.name);
+                }
+            } catch (error) {
+                showError("Failed to fetch weather");
+            }
+        },
+        () => showError("Please allow location access")
+    );
+}
+
+// Event Listeners
+if (searchBtn) searchBtn.addEventListener("click", () => getWeather(cityInput.value));
+if (locationBtn) locationBtn.addEventListener("click", getCurrentLocationWeather);
+if (cityInput) cityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") getWeather(cityInput.value); });
+
+// Load default
+displayHistory();
+getWeather("Karachi");
+</script>
 </body>
 </html>
