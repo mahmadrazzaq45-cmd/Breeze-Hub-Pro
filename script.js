@@ -56,23 +56,6 @@ function getDayName(dateStr) {
     return date.toLocaleDateString('en', { weekday: 'short' });
 }
 
-// ========== Get Forecast ==========
-async function getForecast(city) {
-    try {
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`;
-        
-        const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
-        const data = await response.json();
-        
-        if (data.error) return null;
-        return data.forecast?.forecastday || null;
-    } catch (error) {
-        console.log("Forecast error:", error);
-        return null;
-    }
-}
-
 // ========== Display 5-Day Forecast ==========
 function displayForecast(forecastDays) {
     if (!forecastDays || forecastDays.length === 0) return '';
@@ -98,7 +81,7 @@ function displayForecast(forecastDays) {
     `;
 }
 
-// ========== Main Weather Function ==========
+// ========== Main Weather Function - USING WORKING PROXY ==========
 async function getWeather(city) {
     if (!city || city.trim() === "") {
         showError("Please enter a city name");
@@ -115,10 +98,11 @@ async function getWeather(city) {
     `;
     
     try {
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const currentApiUrl = `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`;
+        // Using a DIFFERENT, MORE RELIABLE proxy
+        const proxyUrl = 'https://corsproxy.io/?';
+        const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${encodeURIComponent(city)}&days=6&aqi=yes`;
         
-        const response = await fetch(proxyUrl + encodeURIComponent(currentApiUrl));
+        const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
         const data = await response.json();
         
         if (data.error) {
@@ -137,16 +121,14 @@ async function getWeather(city) {
         if (aqiValue > 100) { aqiStatus = "Unhealthy"; aqiColor = "#fb923c"; }
         if (aqiValue > 150) { aqiStatus = "Hazardous"; aqiColor = "#f87171"; }
         
-        const forecastDays = await getForecast(city);
-        
         let sunrise = "N/A";
         let sunset = "N/A";
         let forecastHTML = "";
         
-        if (forecastDays && forecastDays.length > 0) {
-            sunrise = forecastDays[0].astro?.sunrise || "N/A";
-            sunset = forecastDays[0].astro?.sunset || "N/A";
-            forecastHTML = displayForecast(forecastDays);
+        if (data.forecast && data.forecast.forecastday && data.forecast.forecastday.length > 0) {
+            sunrise = data.forecast.forecastday[0].astro?.sunrise || "N/A";
+            sunset = data.forecast.forecastday[0].astro?.sunset || "N/A";
+            forecastHTML = displayForecast(data.forecast.forecastday);
         }
         
         weatherContent.innerHTML = `
@@ -248,8 +230,8 @@ function getCurrentLocationWeather() {
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             const { latitude, longitude } = position.coords;
-            const proxyUrl = 'https://api.allorigins.win/raw?url=';
-            const apiUrl = `https://api.weatherapai.com/v1/current.json?key=${API_KEY}&q=${latitude},${longitude}&aqi=yes`;
+            const proxyUrl = 'https://corsproxy.io/?';
+            const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${latitude},${longitude}&days=6&aqi=yes`;
             
             try {
                 const response = await fetch(proxyUrl + encodeURIComponent(apiUrl));
